@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no" />
+  <meta name="theme-color" content="#000000" />
+  <link href="https://fonts.googleapis.com/css?family=Sniglet" rel="stylesheet">
+  <title>DashBoard</title>
+</head>
+
+<body><noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="select_user">
+  </div>
+  <pre id="json"></pre>
+</body>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript">
+  //Get All objects
+  $.ajax({
+    url: '/user',
+    type: 'GET',
+    success: function(data) {
+      //Insert objects as a select list
+      var user_list = $("<select />", {
+        'class': "form-control user_list",
+      });
+      //Get all object and add as a option in select list
+      for (i in data.payload) {
+        //Create option and append to select objects
+        $("<option />", {
+          'value': data.payload[i]._id,
+          'text': data.payload[i].email
+        }).appendTo(user_list);
+      }
+      //Update edit view
+      $('#select_user').html($(user_list));
+      //get post
+      get_post();
+      //Add on change event on select list
+      $(user_list).on("change", function(event) {
+        get_post()
+      });
+    },
+    error: function(error) {}
+  });
+
+  function get_post(argument) {
+    //Get All objects
+    $.ajax({
+      url: '/post?user_id=' + $('.user_list').val(),
+      type: 'GET',
+      success: function(data) {
+        $("#json").html(JSON.stringify(data.payload, null, '\t'))
+      },
+      error: function(error) {}
+    });
+  }
+</script>
+
+</html>
