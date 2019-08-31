@@ -10,8 +10,8 @@ const User = require('../models/user');
 // find game information
 router.get('/', async (req, res) => {
   try {
-    //Get user data
-    const user = await User.findOne({ _id: req.query.user_id }).exec();
+    //Get user data 
+    const user = await User.findOne({ $or: [ { _id: req.query.user_id }, { email: req.query.user_email } ]}).exec();
     //Get require paramenters
     const skip = req.query.skip || 0;
     const limit = req.query.limit || 15;
