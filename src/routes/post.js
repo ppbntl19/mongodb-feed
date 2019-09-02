@@ -12,9 +12,20 @@ router.get('/', async(req, res) => {
     //Get user data 
     const user = await User.findOne({ $or: [{ _id: req.query.user_id }, { email: req.query.user_email }] }).exec();
     //Get require paramenters
-    const skip = req.query.skip || 0;
-    const limit = req.query.limit || 10;
-
+    let  limit = req.query.limit || 10;
+    let skip = req.query.skip || 0;
+    //Type A and B is peerlyst post and C is member post
+    //Get limit/skip for different type of post
+    const type_c_limit = (limit * 60 )/100;
+    //Devide of remaing post
+    const type_ab_limit = ((limit - type_c_limit) * 50 )/100;
+    //Get limit/skip for different type of post
+    const type_c_skip = (skip * 60 )/100;
+    //Devide of remaing post
+    const type_ab_skip = ((skip - type_c_skip) * 50 )/100;
+    //Lmit query based on post type
+    limit = { $cond: { if: { $eq: [ "$_id", "C" ] }, then: type_c_limit, else: type_ab_limit }  };
+    skip = { $cond: { if: { $eq: [ "$_id", "C" ] }, then: type_c_skip, else: type_ab_skip }  };
     //Get related post
     Post.aggregate([
       { $sort: { "posts.created": 1, "category": 1 } },
@@ -37,7 +48,7 @@ router.get('/', async(req, res) => {
           posts: { $push: "$$ROOT" }
         }
       },
-      { $addFields: { posts: { $slice: ["$posts", Math.round(limit/3), Math.round(limit/3)] } } }
+      { $addFields: { posts: { $slice: ["$posts", skip, limit]} } }
     ]).exec((err, result) => {
       //If err return
       if (err || (!result && !result.length)) {
@@ -57,6 +68,7 @@ router.get('/', async(req, res) => {
 
   }
   catch (err) {
+    console.log(err)
     res.status(400).json({
       type: "error",
       error: "Unable to fetch user details",

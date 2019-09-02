@@ -5,7 +5,7 @@ let Post = Schema({
   title: { type: String },
   body: { type: String },
   tags: [{ type: String }],
-  category: { type: String , enum: ['A', 'B', 'C']},//A peerlyst, B,peerlyst C -member
+  category: { type: String , enum: ['A', 'B', 'C']},//Type A and B is peerlyst post and C is member post
   created_by: {
     name: { type: String },
     type: { type: String }

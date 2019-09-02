@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <link rel="shortcut icon" href="/favicon.ico" />
@@ -12,6 +13,12 @@
 <body><noscript>You need to enable JavaScript to run this app.</noscript>
   <div id="select_user">
   </div>
+  </br>
+  Limit: <input type="text"  value="10" class="limit" />
+  </br>
+  Skip: <input type="text" value="0" class="skip" />
+  </br>
+  </hr>
   <pre id="json"></pre>
 </body>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -38,7 +45,7 @@
       //get post
       get_post();
       //Add on change event on select list
-      $(user_list).on("change", function(event) {
+      $(".user_list, .skip, .limit").on("change", function(event) {
         get_post()
       });
     },
@@ -48,7 +55,7 @@
   function get_post(argument) {
     //Get All objects
     $.ajax({
-      url: '/post?user_id=' + $('.user_list').val(),
+      url: '/post?user_id=' + $('.user_list').val()+'&skip=' + $('.skip').val()+'&limit=' + $('.limit').val(),
       type: 'GET',
       success: function(data) {
         $("#json").html(JSON.stringify(data.payload, null, '\t'))
