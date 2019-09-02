@@ -65,7 +65,7 @@ router.get('/', async(req, res) => {
   }
 
 });
-// find game information
+// find information
 router.get('/alternate', async(req, res) => {
   try {
     //Get user data 
