@@ -7,11 +7,69 @@ const Post = require('../models/post');
 const User = require('../models/user');
 
 
-// find game information
-router.get('/', async (req, res) => {
+router.get('/', async(req, res) => {
   try {
     //Get user data 
-    const user = await User.findOne({ $or: [ { _id: req.query.user_id }, { email: req.query.user_email } ]}).exec();
+    const user = await User.findOne({ $or: [{ _id: req.query.user_id }, { email: req.query.user_email }] }).exec();
+    //Get require paramenters
+    const skip = req.query.skip || 0;
+    const limit = req.query.limit || 10;
+
+    //Get related post
+    Post.aggregate([
+      { $sort: { "posts.created": 1, "category": 1 } },
+      {
+        "$match": {
+          $and: [{
+            _author: { $ne: user._id },
+            "$or": [
+              { tags: { $in: user.follow.tags } },
+              { _author: { $in: user.follow._author } },
+              { "category": { $in: ["A", "B"] } }
+            ]
+          }]
+        },
+      },
+      {
+        "$group": {
+          "_id": "$category",
+          count: { $sum: 1 },
+          posts: { $push: "$$ROOT" }
+        }
+      },
+      { $addFields: { posts: { $slice: ["$posts", Math.round(limit/3), Math.round(limit/3)] } } }
+    ]).exec((err, result) => {
+      //If err return
+      if (err || (!result && !result.length)) {
+        res.status(400).json({
+          type: "error",
+          error: "Unable to fetch records",
+          payload: []
+        });
+      }
+      //Slice record to support page initiation
+      res.status(200).json({
+        type: "success",
+        message: "Successfull feteched",
+        payload: result
+      });
+    });
+
+  }
+  catch (err) {
+    res.status(400).json({
+      type: "error",
+      error: "Unable to fetch user details",
+      payload: []
+    });
+  }
+
+});
+// find game information
+router.get('/alternate', async(req, res) => {
+  try {
+    //Get user data 
+    const user = await User.findOne({ $or: [{ _id: req.query.user_id }, { email: req.query.user_email }] }).exec();
     //Get require paramenters
     const skip = req.query.skip || 0;
     const limit = req.query.limit || 15;
